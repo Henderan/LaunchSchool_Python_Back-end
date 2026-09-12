@@ -30,18 +30,6 @@ def prompt(message):
     print(f"=> {message}")
 
 
-def prompt_player_order():
-    while True:
-        prompt('Would you like to go first(1) or second(2) for this match?')
-        human_order = input().strip()
-        if human_order in ('1', '2'):
-            if human_order == '1':
-                return ('Human', 'Computer')
-            else:
-                return ('Computer', 'Human')
-        prompt('Invalid selection.  Please enter 1 or 2.')
-
-
 def prompt_play_again():
     play_again = ''
     while play_again not in ('y', 'yes', 'n', 'no'):
@@ -49,7 +37,6 @@ def prompt_play_again():
         play_again = input().lower()
         if play_again not in ('y', 'yes', 'n', 'no'):
             prompt("Your response was not valid.")
-
     return play_again
 
 
@@ -102,13 +89,13 @@ def empty_squares(board):
 def optimal_choice(player_marker, board):
     def optimal_choice_helper(target_marker, board):
         for line in WINNING_LINES:
-                string = board[line[0]] + board[line[1]] + board[line[2]]
-                count_target_marks = string.count(target_marker)
-                count_empty_marks = string.count(INITIAL_MARKER)
-                if count_target_marks == 2 and count_empty_marks == 1:
-                    for square in line:
-                        if board[square] == INITIAL_MARKER:
-                            return square
+            string = board[line[0]] + board[line[1]] + board[line[2]]
+            count_target_marks = string.count(target_marker)
+            count_empty_marks = string.count(INITIAL_MARKER)
+            if count_target_marks == 2 and count_empty_marks == 1:
+                for square in line:
+                    if board[square] == INITIAL_MARKER:
+                        return square
         return None
 
     offensive_choice = optimal_choice_helper(player_marker, board)
@@ -153,11 +140,11 @@ def player_chooses_square(player, player_marker, board):
 
 def is_game_winner(player_marker, board):
     for line in WINNING_LINES:
-            sq1, sq2, sq3 = line
-            if (board[sq1] == player_marker
-                    and board[sq2] == player_marker
-                    and board[sq3] == player_marker):
-                return True
+        sq1, sq2, sq3 = line
+        if (board[sq1] == player_marker
+                and board[sq2] == player_marker
+                and board[sq3] == player_marker):
+            return True
     return False
 
 
@@ -174,12 +161,12 @@ def play_tic_tac_toe():
         match_score = {'Human': 0, 'Computer': 0}
         match_over = False
         os.system('clear')
-        player_order = prompt_player_order()
 
         while not match_over:
             # set up game
             game_over = False
             game_winner = None
+            player_order = random.choice((('Human', 'Computer'), ('Computer', 'Human')))
             board = initialize_board()
             display_board(game_number, player_order, match_score, board)
 
@@ -189,19 +176,20 @@ def play_tic_tac_toe():
             while not game_over:
                 for player, player_marker in players_and_markers:
                     player_chooses_square(player, player_marker, board)
-                    display_board(game_number, player_order, match_score, board)
 
                     if is_game_winner(player_marker, board):
                         game_winner = player
+                        match_score[game_winner] += 1
+                    
                     if game_winner or board_full(board):
+                        display_board(game_number, player_order, match_score, board)
                         game_over = True
                         break
-            
-                    time.sleep(1)
+                    else:
+                        display_board(game_number, player_order, match_score, board)
+                        time.sleep(1)
             
             if game_winner:
-                match_score[game_winner] += 1
-                display_board(game_number, player_order, match_score, board)
                 msg_map = {'Computer': 'Computer', 'Human': 'You'}
                 prompt(f"{msg_map[game_winner]} won game {game_number}!")
                 if is_match_winner(game_winner, match_score):
