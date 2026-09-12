@@ -7,10 +7,9 @@ PLAYER1_MARKER = 'X'
 PLAYER2_MARKER = 'O'
 PLAYER_MARKERS = (PLAYER1_MARKER, PLAYER2_MARKER)
 WINNING_SCORE = 5
-WINNING_ROWS = ((1, 2, 3), (4, 5, 6), (7, 8, 9))
-WINNING_COLUMNS = ((1, 4, 7), (2, 5, 8), (3, 6, 9))
-WINNING_DIAGONALS = ((1, 5, 9), (3, 5, 7))
-WAYS_TO_WIN = (WINNING_ROWS, WINNING_COLUMNS, WINNING_DIAGONALS)
+WINNING_LINES = ((1, 2, 3), (4, 5, 6), (7, 8, 9), # rows
+                 (1, 4, 7), (2, 5, 8), (3, 6, 9),  # columns
+                 (1, 5, 9), (3, 5, 7))            # diagonals
 
 
 def join_or(sequence, separator=', ', word='or'):
@@ -26,11 +25,36 @@ def join_or(sequence, separator=', ', word='or'):
     last_item = sequence[-1]
     return f'{leading_items}{separator}{word} {last_item}'
 
+
 def prompt(message):
     print(f"=> {message}")
 
+
+def prompt_player_order():
+    while True:
+        prompt('Would you like to go first(1) or second(2) for this match?')
+        human_order = input().strip()
+        if human_order in ('1', '2'):
+            if human_order == '1':
+                return ('Human', 'Computer')
+            else:
+                return ('Computer', 'Human')
+        prompt('Invalid selection.  Please enter 1 or 2.')
+
+
+def prompt_play_again():
+    play_again = ''
+    while play_again not in ('y', 'yes', 'n', 'no'):
+        prompt("Play another match? (y or n)")
+        play_again = input().lower()
+        if play_again not in ('y', 'yes', 'n', 'no'):
+            prompt("Your response was not valid.")
+
+    return play_again
+
 def display_match_score(match_score):
     prompt(f"MATCH SCORE:  You: {match_score['Human']}, Computer: {match_score['Computer']}")
+
 
 def display_board(game_number, player_order, match_score, board):
     os.system('clear')
@@ -43,7 +67,8 @@ def display_board(game_number, player_order, match_score, board):
         predicate2 = 'You are'
 
     prompt(f"Game {game_number}")
-    prompt(f"{predicate1} Player 1 ('{PLAYER1_MARKER}'). {predicate2} Player 2 ('{PLAYER2_MARKER}').")
+    prompt(f"{predicate1} Player 1 ('{PLAYER1_MARKER}'). " 
+           f"{predicate2} Player 2 ('{PLAYER2_MARKER}').")
     display_match_score(match_score)
     prompt(f"First player to win {WINNING_SCORE} games wins the match.")
     print('')
@@ -60,19 +85,22 @@ def display_board(game_number, player_order, match_score, board):
     print('     |     |')
     print('')
 
+
 def initialize_board():
     return {square: INITIAL_MARKER for square in range(1, 10)}
+
 
 def board_full(board):
     return len(empty_squares(board)) == 0
 
+
 def empty_squares(board):
     return [key for key, value in board.items() if value == INITIAL_MARKER]
 
+
 def optimal_choice(player_marker, board):
     def optimal_choice_helper(target_marker, board):
-        for directional in WAYS_TO_WIN:
-            for line in directional:
+        for line in WINNING_LINES:
                 string = board[line[0]] + board[line[1]] + board[line[2]]
                 count_target_marks = string.count(target_marker)
                 count_empty_marks = string.count(INITIAL_MARKER)
@@ -86,15 +114,13 @@ def optimal_choice(player_marker, board):
     if offensive_choice:
         return offensive_choice
 
-    for marker in PLAYER_MARKERS:
-        if marker != player_marker:
-            opponent_marker = marker
-    
+    opponent_marker = PLAYER_MARKERS[0] if player_marker == PLAYER_MARKERS[1] else PLAYER_MARKERS[1]
     defensive_choice = optimal_choice_helper(opponent_marker, board)
     if defensive_choice:
         return defensive_choice
                                            
     return None
+
 
 def computer_chooses_square(player_marker, board):
     square = optimal_choice(player_marker, board)
@@ -105,6 +131,7 @@ def computer_chooses_square(player_marker, board):
             square = random.choice(empty_squares(board))
     board[square] = player_marker
 
+
 def human_chooses_square(player_marker, board):
     while True:
         valid_choices = [str(num) for num in empty_squares(board)]
@@ -112,10 +139,9 @@ def human_chooses_square(player_marker, board):
         square = input().strip()
         if square in valid_choices:
             break
-
         prompt("Sorry, that's not a valid choice.")
-
     board[int(square)] = player_marker
+
 
 def player_chooses_square(player, player_marker, board):
     if player == 'Human':
@@ -123,19 +149,20 @@ def player_chooses_square(player, player_marker, board):
     else:
         computer_chooses_square(player_marker, board)
 
+
 def is_game_winner(player_marker, board):
-    for directional in WAYS_TO_WIN:
-        for line in directional:
+    for line in WINNING_LINES:
             sq1, sq2, sq3 = line
             if (board[sq1] == player_marker
                     and board[sq2] == player_marker
                     and board[sq3] == player_marker):
                 return True
-
     return False
+
 
 def is_match_winner(player, match_score):
     return match_score[player] == WINNING_SCORE
+
 
 def play_tic_tac_toe():
     session_over = False
@@ -146,22 +173,9 @@ def play_tic_tac_toe():
         match_score = {'Human': 0, 'Computer': 0}
         match_over = False
         os.system('clear')
+        player_order = prompt_player_order()
 
         while not match_over:
-            # establish player order
-            while True:
-                prompt(f'Would you like to go first(1) or second(2) for game {game_number}?')
-                human_order = input().strip()
-                if human_order in ('1', '2'):
-                    if human_order == '1':
-                        player_order = ('Human', 'Computer')
-                    else:
-                        player_order = ('Computer', 'Human')
-
-                    break
-
-                prompt('Invalid selection.  Please enter 1 or 2.')
-
             # set up game
             game_over = False
             game_winner = None
@@ -195,18 +209,16 @@ def play_tic_tac_toe():
             else:
                 prompt("It's a tie!")
 
+            prompt('Press Enter to continue:')
+            input()
+
             game_number += 1
 
-        play_again = ''
-        while play_again not in ('y', 'yes', 'n', 'no'):
-            prompt("Play another match? (y or n)")
-            play_again = input().lower()
-            if play_again not in ('y', 'yes', 'n', 'no'):
-                prompt("Your response was not valid.")
-
+        play_again = prompt_play_again()
         if play_again in ('n', 'no'):
             session_over = True
 
     prompt('Thanks for playing Tic Tac Toe!')
+
 
 play_tic_tac_toe()
