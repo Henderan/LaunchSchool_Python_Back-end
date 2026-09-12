@@ -99,7 +99,10 @@ def optimal_choice(player_marker, board):
 def computer_chooses_square(player_marker, board):
     square = optimal_choice(player_marker, board)
     if not square:
-        square = random.choice(empty_squares(board))
+        if 5 in empty_squares(board):
+            square = 5
+        else:
+            square = random.choice(empty_squares(board))
     board[square] = player_marker
 
 def human_chooses_square(player_marker, board):
