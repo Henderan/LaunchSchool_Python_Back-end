@@ -8,7 +8,7 @@ PLAYER2_MARKER = 'O'
 PLAYER_MARKERS = (PLAYER1_MARKER, PLAYER2_MARKER)
 WINNING_SCORE = 5
 WINNING_LINES = ((1, 2, 3), (4, 5, 6), (7, 8, 9), # rows
-                 (1, 4, 7), (2, 5, 8), (3, 6, 9),  # columns
+                 (1, 4, 7), (2, 5, 8), (3, 6, 9), # columns
                  (1, 5, 9), (3, 5, 7))            # diagonals
 
 
@@ -105,8 +105,7 @@ def optimal_choice(player_marker, board):
     opponent_marker = PLAYER_MARKERS[0] if player_marker == PLAYER_MARKERS[1] else PLAYER_MARKERS[1]
     defensive_choice = optimal_choice_helper(opponent_marker, board)
     if defensive_choice:
-        return defensive_choice
-                                           
+        return defensive_choice                        
     return None
 
 
@@ -153,9 +152,7 @@ def is_match_winner(player, match_score):
 
 
 def play_tic_tac_toe():
-    session_over = False
-
-    while not session_over:
+    while True:
         # set up match
         game_number = 1
         match_score = {'Human': 0, 'Computer': 0}
@@ -181,12 +178,12 @@ def play_tic_tac_toe():
                         game_winner = player
                         match_score[game_winner] += 1
                     
+                    display_board(game_number, player_order, match_score, board)
+                    
                     if game_winner or board_full(board):
-                        display_board(game_number, player_order, match_score, board)
                         game_over = True
                         break
                     else:
-                        display_board(game_number, player_order, match_score, board)
                         time.sleep(1)
             
             if game_winner:
@@ -205,7 +202,7 @@ def play_tic_tac_toe():
 
         play_again = prompt_play_again()
         if play_again in ('n', 'no'):
-            session_over = True
+            break
 
     prompt('Thanks for playing Tic Tac Toe!')
 
